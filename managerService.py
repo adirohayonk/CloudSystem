@@ -3,6 +3,8 @@
 import socket
 import threading
 
+# test
+
 
 class ThreadedServer(object):
     def __init__(self, host, port):
@@ -17,7 +19,7 @@ class ThreadedServer(object):
         while True:
             client, address = self.sock.accept()
             client.settimeout(60)
-            threading.Thread(target = self.listenToClient,args = (client,address)).start()
+            threading.Thread(target=self.listenToClient, args=(client, address)).start()
 
     def listenToClient(self, client, address):
         size = 1024
