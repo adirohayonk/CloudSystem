@@ -1,0 +1,27 @@
+#!/usr/bin/python
+import socket
+
+
+def create_connection(hostname, file_name_to_store):
+    connection_socket = socket.socket()
+    host = hostname
+    port = 4444
+    connection_socket.connect((host, port))
+    store_file(connection_socket, file_name_to_store)
+    connection_socket.close()
+
+
+def store_file(connection_socket, file_name):
+    file_path = file_name
+    file_handler = open(file_path, "w", newline="\n")
+    received_content = connection_socket.recv(1024)
+    file_handler.write(received_content.decode('UTF-8'))
+
+
+def main():
+    create_connection('127.0.0.1', "/home/kipseron/filename.txt")
+
+
+if __name__ == "__main__":
+    main()
+

@@ -1,0 +1,37 @@
+#!/usr/bin/python
+import subprocess
+import threading
+
+COUNTER = counter
+
+
+class RunAsThread(threding.Thread):
+    def __init__(self, thread_id, file, counter):
+        threading.Thread.__init__(self)
+        self.threadID = thread_id
+        self.file = file
+        self.counter = COUNTER
+
+    def run(self):
+        while(self.counter):
+            print("Starting " + self.name)
+            run_file(self.file)
+
+
+def run_file(filename):
+    # result = subprocess.Popen(['bash', filename])
+    result = subprocess.Popen(['date', '+%S'])
+    print(result)
+
+
+def main():
+    thread1 = RunAsThread(1, "abc")
+    thread2 = RunAsThread(2, "abc")
+    thread3 = RunAsThread(3, "abc")
+    thread1.start()
+    thread2.start()
+    thread3.start()
+
+
+if __name__ == '__main__':
+    main()
