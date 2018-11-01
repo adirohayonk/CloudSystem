@@ -3,6 +3,16 @@
 import mysql.connector
 
 class DbController:
+    """
+        init creates the db pointer using connect_to_db function
+        and create the cursor pointer
+        Args:
+            hostname (string): the hostname for the mysql server
+            username (string): the username for the mysql server
+            password (string): the password for the mysql server
+            database (string): the database that should be used
+
+    """
     def __init__(self,hostname,username,password,database):
         self.hostname = hostname
         self.username = username
@@ -33,28 +43,15 @@ class DbController:
         self.mydb.commit()
 
     def update_host(self, host, field, fieldContent):
-        sql = " UPDATE hosts SET {} = %s WHERE hostname = %s".format(field)
+        sql = "UPDATE hosts SET {} = %s WHERE hostname = %s".format(field)
         self.cursor.execute(sql,(fieldContent,host))
         self.commit_to_db()
 
-    def update_host(self, host, field, fieldContent):
-        sql = " UPDATE hosts SET {} = %s WHERE hostname = %s".format(field)
-        self.cursor.execute(sql,(fieldContent,host))
-        self.commit_to_db()
-
-def main():
-    dbCon1 = DbController("192.168.1.20", "man", "p", "cloudSystemDB")
-    #dbCon1.insert_to_db("hosts",("test", "192.168.1.24", "250", "600", "1", "30", "20"))
-    #dbCon1.insert_to_db("jobs",("test", "192.168.1.24", "250", "600"))
-    #dbCon1.commit_to_db()
-    dbCon1.cursor.execute("SELECT * FROM hosts")
-    for row in dbCon1.cursor.fetchall():
-        print(row)
-    dbCon1.update_host("test", "totalMem", "900")
-    dbCon1.cursor.execute("SELECT * FROM hosts")
-    for row in dbCon1.cursor.fetchall():
-        print(row)
-
+    def get_host_data(self, host, field):
+        sql = "SELECT {} from hosts WHERE hostname = %s".format(field)
+        self.cursor.execute(sql,(host, ))
+        hostData = self.cursor.fetchone()
+        return hostData
 
 if(__name__== "__main__"):
     main()
