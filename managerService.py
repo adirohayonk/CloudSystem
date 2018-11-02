@@ -1,8 +1,7 @@
-#!/usr/intel/bin/python
+#!/usr/bin/python
 
 import socket
 import threading
-
 
 class ThreadedServer(object):
     def __init__(self, host, port):
