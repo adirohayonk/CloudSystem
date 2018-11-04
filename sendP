@@ -25,7 +25,7 @@ def send_file(connection_socket, file_name):
 
 
 def main():
-    create_connection('127.0.0.1', "test")
+    create_connection('192.168.1.20', "test")
 
 
 if __name__ == "__main__":
