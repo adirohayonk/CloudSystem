@@ -47,6 +47,7 @@ class DbController:
         self.cursor.execute(sql,(fieldContent,host))
         self.commit_to_db()
 
+#test
     def get_host_data(self, host, field):
         sql = "SELECT {} from hosts WHERE hostname = %s".format(field)
         self.cursor.execute(sql,(host, ))
