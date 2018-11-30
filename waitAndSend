@@ -1,0 +1,60 @@
+#!/usr/bin/python
+import socket
+import threading
+import os
+import socketLib
+
+def RetrFile(name, sock):
+    filename = recv_and_decode(sock)
+    if os.path.isfile(filename):
+        sock.send(("EXISTS " + str(os.path.getsize(filename))).encode())
+        userResponse = recv_and_decode(sock)
+        if userResponse[:2] == 'OK':
+            with open(filename, 'rb') as f:
+                bytesToSend = f.read(1024)
+                sock.send(bytesToSend)
+                while bytesToSend != "":
+                    bytesToSend = f.read(1024)
+                    sock.send(bytesToSend)
+    else:
+        send_and_encode("ERR", sock)
+    sock.close()
+
+
+#def create_connection(hostname, file_name_to_store):
+#    connection_socket = socket.socket()
+#    host = hostname
+#    port = 4444
+#    connection_socket.connect((host, port))
+#    store_file(connection_socket, file_name_to_store)
+#    connection_socket.close()
+#
+#
+#def store_file(connection_socket, file_name):
+#    file_path = file_name
+#    file_handler = open(file_path, "wb", newline="\n")
+#    received_content = connection_socket.recv(1024)
+#    while received_content:
+#        file_handler.write(received_content.decode('UTF-8'))
+#        received_content = connection_socket.recv(1024)
+#
+
+def main():
+    host = '127.0.0.1'
+    port = 4444
+    s = socket.socket()
+    s.bind((host, port))
+    s.listen(5)
+
+    print("Server Started.")
+    while True:
+        c, addr = s.accept()
+        print("client connected ip: < " + str(addr) + ">")
+        t = threading.Thread(target=RetrFile, args=("retrThread", c))
+        t.start()
+    s.close()
+
+
+if __name__ == "__main__":
+    main()
+

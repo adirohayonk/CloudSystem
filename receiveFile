@@ -1,0 +1,71 @@
+#!/usr/bin/python
+import socket
+import sys
+import socketLib
+
+
+#def create_connection(hostname, file_name_to_send):
+#    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#    host = hostname
+#    port = 4444
+#    server_socket.connect((host, port))
+#    while True:
+#        send_file(server_socket, file_name_to_send)
+#
+#
+#def send_file(connection_socket, file_name):
+#    file_content = open(file_name)
+#    #load = file_content.read(1024)
+#    while load:
+#        connection_socket.send(load)
+#        print('Sent ', repr(load))
+#        load = file_content.read(1024)
+#    connection_socket.close()
+#
+#
+def main():
+    host = '127.0.0.1'
+    port = 4444
+
+    sock = socket.socket()
+    sock.connect((host , port))
+
+
+
+def receive_file(sock):
+     filename = input("Filename? -> ")
+    if filename != 'q':
+        send_and_encode(filename, sock)
+        data = recv_and_decode(sock)
+        if data[:6] == 'EXISTS':
+            filesize = data[6:]
+            message = input("File Exists, " + str(filesize)+"Bytes, download? (Y/N)? ->")
+            if message == 'y':
+                send_and_encode("OK", sock)
+                f = open('new_'+filename, 'wb')
+                data = sock.recv(1024)
+                totalRecv = len(data)
+                f.write(data)
+                while totalRecv < int(filesize):
+                    data = sock.recv(1024)
+                    totalRecv += len(data.decode())
+                    f.write(data)
+                    print("{0:.2f}".format((totalRecv/float(filesize))*100)+" %Done")
+                print("Download Complete!")
+        else:
+            print("File does not Exist!")
+    sock.close()
+
+def send_and_encode(data, sock):
+    encodedData = data.encode()
+    sock.send(encodedData)
+
+def recv_and_decode(sock):
+    data = sock.recv(1024)
+    decodedData = data.decode()
+    return decodedData
+
+
+if __name__ == "__main__":
+    main()
+
