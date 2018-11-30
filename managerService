@@ -1,0 +1,56 @@
+#!/usr/bin/python
+
+import socket
+import threading
+import socketLib as sockTools
+
+CHUNK_SIZE = 8 * 1024
+
+
+class ThreadedServer(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.host, self.port))
+
+    def listen(self):
+        self.sock.listen(5)
+        print("Server Started")
+        while True:
+            client_socket, address = self.sock.accept()
+            client_socket.settimeout(60)
+            threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
+
+    def listen_to_client(self, client_socket, address):
+        while True:
+            try:
+                data_from_client = sockTools.recv_and_decode(client_socket)
+                print("data:" + data_from_client)
+                if data_from_client == "":
+                    print("{} Disconnected".format(address))
+                    client_socket.close()
+                    return False
+                if data_from_client == "sendFile":
+                    self.receieve_file_from_client(client_socket)
+                if data_from_client == "newWorker":
+                    self.add_new_worker(client_socket)
+
+            except:
+                print("{} Disconnected".format(address))
+                client_socket.close()
+                return False
+
+    def receieve_file_from_client(self, client_socket):
+        sockTools.send_and_encode("Please provide filename?", client_socket)
+        filename = sockTools.recv_and_decode(client_socket)
+
+    def add_new_worker(self, client_socket):
+        sockTools.send_and_encode("Please provide filename?", client_socket)
+        filename = client_socket.recv_and_decode(client_socket)
+
+
+if __name__ == "__main__":
+    port_num = 4444
+    ThreadedServer('127.0.0.1', port_num).listen()
