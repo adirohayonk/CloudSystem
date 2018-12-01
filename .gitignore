@@ -2,3 +2,4 @@ __pycache__/socketLib.cpython-37.pyc
 .idea/workspace.xml
 test
 __pycache__/fileManagementLib.cpython-37.pyc
+clients_jobs/*
