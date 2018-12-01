@@ -33,7 +33,7 @@ class ThreadedServer(object):
                     client_socket.close()
                     return False
                 if data_from_client == "sendFile":
-                    self.receieve_file_from_client(client_socket, address)
+                    self.receive_file_from_client(client_socket, address)
                 if data_from_client == "newWorker":
                     self.add_new_worker(client_socket)
                 if data_from_client == "receiveResults":
@@ -44,7 +44,7 @@ class ThreadedServer(object):
                 client_socket.close()
                 return False
 
-    def receieve_file_from_client(self, client_socket, address):
+    def receive_file_from_client(self, client_socket, address):
         sockTools.send_and_encode(client_socket, "Please send the file...")
         sockTools.receiveFile(client_socket, address[0])
 
