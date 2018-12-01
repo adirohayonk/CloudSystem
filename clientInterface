@@ -23,9 +23,8 @@ def main():
     print(arguments)
     host = arguments.server
     port = arguments.port
-
-    #sock = socket.socket()
-    #sock.connect((host, port))
+    sock = socket.socket()
+    sock.connect((host, port))
 
     if arguments.listOfJobs:
         print("list of jobs implementation")
@@ -34,8 +33,6 @@ def main():
         print("jobID is: " + arguments.jobStatus)
     if arguments.newWorker:
         print("newWorker implementation")
-
-
 
     exit(0)
     while True:
