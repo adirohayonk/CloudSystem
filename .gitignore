@@ -4,4 +4,3 @@ test
 __pycache__/fileManagementLib.cpython-37.pyc
 clients_jobs/*
 .vscode/*
-.vscode/settings.json
