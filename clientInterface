@@ -19,7 +19,6 @@ def main():
     parser.add_argument('-p', '--port', metavar='PORT', default=4444,
                         help="Port of the manager (default: 4444)")
     arguments = parser.parse_args()
-#    print(arguments)
     host = arguments.server
     port = arguments.port
     sock = socket.socket()
@@ -37,7 +36,6 @@ def main():
        response = sockTools.recv_and_decode(sock)
        print(response)
        sockTools.sendFile(sock, arguments.file)
-       sendFileToManager() 
 
 
 if __name__ == "__main__":
