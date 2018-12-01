@@ -40,31 +40,5 @@ def main():
        sendFileToManager() 
 
 
-   # exit(0)
-   # while True:
-   #     selected_option = parse_options(option)
-   #     sockTools.send_and_encode(selected_option, sock)
-   #     try:
-   #         data_from_server = sockTools.recv_and_decode(sock)
-   #         print(data_from_server)
-   #         if data_from_server == "":
-   #             print("{} Disconnected".format(host))
-   #             sock.close()
-   #             return False
-   #     except socket.error:
-   #         print("{} Disconnected".format(host))
-   #         sock.close()
-   #         return False
-
-#def parse_options(option):
-#    print("option: " + option)
-#    list_of_options = {
-#        "1": "sendFile",
-#        "2": "newWorker",
-#        "3": "receiveResults"
-#    }
-#    return list_of_options.get(option, "Invalid option")
-#
-
 if __name__ == "__main__":
     main()
