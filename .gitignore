@@ -3,3 +3,4 @@ __pycache__/socketLib.cpython-37.pyc
 test
 __pycache__/fileManagementLib.cpython-37.pyc
 clients_jobs/*
+.vscode/settings.json
