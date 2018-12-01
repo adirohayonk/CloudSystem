@@ -36,8 +36,10 @@ class ThreadedServer(object):
                     self.receieve_file_from_client(client_socket)
                 if data_from_client == "newWorker":
                     self.add_new_worker(client_socket)
+                if data_from_client == "receiveResults":
+                    self.add_new_worker(client_socket)
 
-            except:
+            except socket.error:
                 print("{} Disconnected".format(address))
                 client_socket.close()
                 return False
