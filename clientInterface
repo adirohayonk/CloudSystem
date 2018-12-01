@@ -1,0 +1,67 @@
+#!/usr/bin/python
+import socket
+import sys
+import socketLib as sockTools
+import argparse
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Provides many options for controlling and managing jobs on CloudSystem.')
+    parser.add_argument('-f', '--file', metavar='[File]',
+                        help="File name contains the script to upload to the server")
+    parser.add_argument('-n', '--newWorker', default=False, action="store_true",
+                        help="Add this machine as a new worker")
+    parser.add_argument('-l', '--listOfJobs', default=False, action="store_true",
+                        help="Receive list of completed jobs from the manager")
+    parser.add_argument('-j', '--jobStatus', metavar='JobID',
+                        help="Receive job status or completion log")
+    parser.add_argument('-s', '--server', metavar='ServerIP', default="127.0.0.1",
+                        help="Ip address of the manager (default: 127.0.0.1)")
+    parser.add_argument('-p', '--port', metavar='PORT', default=4444,
+                        help="Port of the manager (default: 4444)")
+    arguments = parser.parse_args()
+    print(arguments)
+    host = arguments.server
+    port = arguments.port
+
+    #sock = socket.socket()
+    #sock.connect((host, port))
+
+    if arguments.listOfJobs:
+        print("list of jobs implementation")
+    if arguments.jobStatus:
+        print("jobstatus implementation")
+        print("jobID is: " + arguments.jobStatus)
+    if arguments.newWorker:
+        print("newWorker implementation")
+
+
+
+    exit(0)
+    while True:
+        selected_option = parse_options(option)
+        sockTools.send_and_encode(selected_option, sock)
+        try:
+            data_from_server = sockTools.recv_and_decode(sock)
+            print(data_from_server)
+            if data_from_server == "":
+                print("{} Disconnected".format(host))
+                sock.close()
+                return False
+        except socket.error:
+            print("{} Disconnected".format(host))
+            sock.close()
+            return False
+
+def parse_options(option):
+    print("option: " + option)
+    list_of_options = {
+        "1": "sendFile",
+        "2": "newWorker",
+        "3": "receiveResults"
+    }
+    return list_of_options.get(option, "Invalid option")
+
+
+if __name__ == "__main__":
+    main()
