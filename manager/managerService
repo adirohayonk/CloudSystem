@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
+import sys
+sys.path.append('../lib/')
 import socket
 import threading
 import socketLib as sockTools
+import fileManagementLib as fileM
 
 CHUNK_SIZE = 8 * 1024
 
@@ -12,6 +15,7 @@ class managerService(object):
         self.host = host
         self.port = port
         self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
+        fileM.createEnv()
 
     def listen(self):
         self.mySocket.listen(5)
