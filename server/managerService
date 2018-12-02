@@ -7,19 +7,17 @@ import socketLib as sockTools
 CHUNK_SIZE = 8 * 1024
 
 
-class ThreadedServer(object):
+class managerService(object):
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((self.host, self.port))
+        self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
 
     def listen(self):
-        self.sock.listen(5)
+        self.mySocket.listen(5)
         print("Server Started")
         while True:
-            client_socket, address = self.sock.accept()
+            client_socket, address = self.mySocket.accept()
             client_socket.settimeout(60)
             threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
 
@@ -54,4 +52,4 @@ class ThreadedServer(object):
 
 if __name__ == "__main__":
     port_num = 4444
-    ThreadedServer('0.0.0.0', port_num).listen()
+    managerService('0.0.0.0', port_num).listen()

@@ -7,12 +7,20 @@ def send_and_encode(sock, data):
     sock.send(encodedData)
 
 
+def create_and_bind_socket(host, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((self.host, self.port))
+    return sock
+
+
+
 def recv_and_decode(sock):
     data = sock.recv(1024)
     decodedData = data.decode()
     decodedData = decodedData.strip()
     return decodedData
-    
+
 
 def receiveFile(sock, filename):
     fileSize = recv_and_decode(sock)
@@ -30,6 +38,7 @@ def receiveFile(sock, filename):
         f.write(data)
         totalRecv += len(data) 
     print("File Transfer completed")
+    send_and_encode(sock, "File transfer completed")
 
 
 def sendFile(sock, filename):
@@ -40,10 +49,10 @@ def sendFile(sock, filename):
         print(response)
         with open(filename, 'rb') as f:
                 bytesToSend = f.read(1024)
-                sock.send(bytesToSend)
-                while bytesToSend != "":
-                    bytesToSend = f.read(1024)
-                    sock.send(bytesToSend)
+                while bytesToSend != '':
+                    sock.send(bytesToSend) 
+        response = recv_and_decode(sock)
+        print(response)
     else:
         print("Filename doesn't exists")
     sock.close()
