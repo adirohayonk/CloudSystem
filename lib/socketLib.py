@@ -1,6 +1,9 @@
+import sys
+sys.path.append('../lib/')
 import fileManagementLib as fileM
 import datetime
 import os
+import socket
 
 def send_and_encode(sock, data):
     encodedData = data.encode()
@@ -10,9 +13,8 @@ def send_and_encode(sock, data):
 def create_and_bind_socket(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((self.host, self.port))
+    sock.bind((host, port))
     return sock
-
 
 
 def recv_and_decode(sock):
@@ -29,7 +31,7 @@ def receiveFile(sock, filename):
     currentTime = datetime.datetime.now().strftime("%d-%m-%Y-%X") 
     storedFileName = "[" + filename + "]" + currentTime
     print("Saving file filename is {}".format(storedFileName))
-    f = open("clients_jobs/" + storedFileName, 'wb')
+    f = open("jobs/" + storedFileName, 'wb')
     data = sock.recv(2048)
     totalRecv = len(data) 
     f.write(data)
