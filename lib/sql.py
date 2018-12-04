@@ -28,8 +28,8 @@ class DbController:
     def insert_to_db(self, table, data):
         if table == 'hosts':
             sql = "INSERT INTO " \
-                  "hosts(hostname, ipaddr, availMem, totalMem, cores, cpuUsage, memUsage)" \
-                  "VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                  "hosts(hostname, ipaddr, totalMem, CPUnum)" \
+                  "VALUES (%s, %s, %s, %s, %s)"
         else:
             sql = "INSERT INTO " \
                   "jobs(id, fileName, filePath, outputPath) " \

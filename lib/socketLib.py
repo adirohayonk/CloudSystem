@@ -11,10 +11,20 @@ def send_and_encode(sock, data):
 
 
 def create_and_bind_socket(host, port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock = create_socket(isTCP = True)
     sock.bind((host, port))
     return sock
+
+
+def create_socket(isTCP):
+    if isTCP:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    else:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    return sock
+    
 
 
 def recv_and_decode(sock):
@@ -58,3 +68,4 @@ def sendFile(sock, filename):
     else:
         print("Filename doesn't exists")
     sock.close()
+
