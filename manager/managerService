@@ -7,10 +7,21 @@ import threading
 import socketLib as sockTools
 import fileManagementLib as fileM
 
-CHUNK_SIZE = 8 * 1024
-
-
 class managerService(object):
+    """
+     class: managerService
+
+     this class is a service for the manager server.
+     this service should run in the background, unless debugging output is needed.
+     
+       -parameters: host, port::
+         -host - the host that socket should listen on.
+         -port - port for the socket.
+         
+     this class will create the socket and store it on mySocket variable.
+     
+     after running the class user should call listen function for server to start listening.
+     """
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -18,6 +29,14 @@ class managerService(object):
         fileM.createEnv()
 
     def listen(self):
+        """
+        This function is waiting for incoming connections.
+        when a connection arrive to the server socket.
+        socket is assigned to this connection and a new thread is created
+        so connections could occurs simultaniously.
+        then the thread calls listen_to_client function.
+        
+        """
         self.mySocket.listen(5)
         print("Server Started")
         while True:
@@ -26,6 +45,15 @@ class managerService(object):
             threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
 
     def listen_to_client(self, client_socket, address):
+        """
+        this functions listen to client waiting to receive new information and act accordingly.
+        - parameters: client_socket, address::
+         -client_socket - the socket that transfers the client data.
+         -address - client address for filenames and debugging.
+         
+         client can sends several words through socket for various functions.
+         **sendFile** - when this word is 
+        """
         while True:
             try:
                 data_from_client = sockTools.recv_and_decode(client_socket)
