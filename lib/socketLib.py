@@ -51,6 +51,7 @@ def receiveFile(sock, filename):
         totalRecv += len(data) 
     print("File Transfer completed")
     send_and_encode(sock, "File transfer completed")
+    return storedFileName
 
 
 def sendFile(sock, filename):

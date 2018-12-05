@@ -6,6 +6,7 @@ import socket
 import threading
 import socketLib as sockTools
 import fileManagementLib as fileM
+import executeJob
 
 class workerService(object):
 	"""
@@ -71,14 +72,15 @@ class workerService(object):
 
     def receive_file_from_server(self, server_socket, address):
     	"""
-    	this functions receives files from the server by sending the phrase and then start receiving process by calling receive_file method from sockTools library.
+    	this functions receives files from the server by sending the phrase and then start receiving process by calling receive_file method from sockTools library stores fileName and then execute the job.
         - parameters:server_socket, address::
          -server_socket - the socket that transfers the server data.
          -address - server address for filenames and debugging.
          """
         sockTools.send_and_encode(server_socket, "Please send the file...")
-        sockTools.receiveFile(server_socket, address[0])
-
+        fileName = sockTools.receiveFile(server_socket, address[0])
+        executeJob.run_file(fileName)
+        
 
 if __name__ == "__main__":
     port_num = 4444

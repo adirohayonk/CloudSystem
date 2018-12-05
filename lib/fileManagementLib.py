@@ -11,7 +11,8 @@ def openFile(folder ,filename):
 
 def createEnv():
     jobsFolder = 'jobs/'
-    libFolder = '../lib/'
+    jobsResultsFolder = 'jobs_results/'
     pathlib.Path(jobsFolder).mkdir(parents=True, exist_ok=True)
-    if not os.path.exists(libFolder):
-        raise Exception('lib folder is missing in {}'.format(os.path.abspath(libFolder)))
+    pathlib.Path(jobsResultsFolder).mkdir(parents=True, exist_ok=True)
+    
+    
