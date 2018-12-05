@@ -26,12 +26,12 @@ creating a socket using create socket method, extracting broadcast address if ne
 
 
 def receiveDiscoverInfo():
-	    """
+	"""
     this function receives the discover info from the worker after and parse it  
         this function returns the data in a list.
-    """
-    ip = "0.0.0.0"
-    port = 4444
+	"""
+	ip = "0.0.0.0"
+	port = 4444
     sock = sockTools.create_socket(isTCP = False)
     sock.bind((ip, port))
     while True:
