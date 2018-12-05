@@ -19,7 +19,7 @@ creating a socket using create socket method, extracting broadcast address if ne
     unparsedIpOutput = subprocess.check_output(["ip", "a"])
     splitted = re.findall( r'brd [\d.-]+ scope', str(unparsedIpOutput))
     if not address:
-    	broadCastAddress = splitted[0].split()[1]
+		broadCastAddress = splitted[0].split()[1]
     port = 4444
     data = data.encode()
     sock.sendto(data, (broadCastAddress, port))
