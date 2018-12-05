@@ -8,6 +8,20 @@ import socketLib as sockTools
 import fileManagementLib as fileM
 
 class workerService(object):
+	"""
+     class: workerService
+
+     this class is a service for the worker server.
+     this service should run in the background, unless debugging output is needed.
+     
+       -parameters: host, port::
+         -host - the host that socket should listen on.
+         -port - port for the socket.
+         
+     this class will create the socket and store it on mySocket variable.
+     
+     after running the class user should call listen function for server to start listening.
+     """
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -15,6 +29,13 @@ class workerService(object):
         fileM.createEnv()
 
     def listen(self):
+    	"""
+        This function is waiting for incoming connections.
+        when a connection arrive to the server socket.
+        socket is assigned to this connection and a new thread is created
+        so connections could occurs simultaniously.
+        then the thread calls listen_to_server function.    
+        """
         self.mySocket.listen(5)
         print("Worker service started")
         while True:
@@ -23,6 +44,15 @@ class workerService(object):
             threading.Thread(target=self.listen_to_server, args=(server_socket, address)).start()
 
     def listen_to_server(self, server_socket, address):
+    	"""
+        this functions listen to server waiting to receive new information and act accordingly.
+        - parameters: server_socket, address::
+         -server_socket - the socket that transfers the server data.
+         -address - server address for filenames and debugging.
+         
+         server can send several words through socket for various functions:
+         **sendFile** - when this word is received the worker start receiving the job file.
+        """
         while True:
             try:
                 data_from_server = sockTools.recv_and_decode(server_socket)
@@ -40,6 +70,12 @@ class workerService(object):
                 return False
 
     def receive_file_from_server(self, server_socket, address):
+    	"""
+    	this functions receives files from the server by sending the phrase and then start receiving process by calling receive_file method from sockTools library.
+        - parameters:server_socket, address::
+         -server_socket - the socket that transfers the server data.
+         -address - server address for filenames and debugging.
+         """
         sockTools.send_and_encode(server_socket, "Please send the file...")
         sockTools.receiveFile(server_socket, address[0])
 

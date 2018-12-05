@@ -7,7 +7,7 @@ import socketLib as sockTools
 
 def sendUDPPacket(data, address = None):
     """
-    this functions sends simple UDPPacket to specific address or broadcast address by default with data specified by:
+    this function sends simple UDPPacket to specific address or broadcast address by default with data specified by:
 creating a socket using create socket method, extracting broadcast address if needed and than send the message to the address.
         - parameters: data, address::
          -data - data that should be sended through the socket
@@ -26,6 +26,10 @@ creating a socket using create socket method, extracting broadcast address if ne
 
 
 def receiveDiscoverInfo():
+	    """
+    this function receives the discover info from the worker after and parse it  
+        this function returns the data in a list.
+    """
     ip = "0.0.0.0"
     port = 4444
     sock = sockTools.create_socket(isTCP = False)
@@ -40,6 +44,10 @@ def receiveDiscoverInfo():
 
 
 def receiveDiscoverPacket():
+	    """
+    this function receives the Discover packet and call the function that collect the relevant information on the worker side. 
+    the function returns the information unparsed.
+    """
     ip = "0.0.0.0"
     port = 4444 
     sock = sockTools.create_socket(isTCP = False)
