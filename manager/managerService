@@ -51,8 +51,10 @@ class managerService(object):
          -client_socket - the socket that transfers the client data.
          -address - client address for filenames and debugging.
          
-         client can sends several words through socket for various functions.
-         **sendFile** - when this word is 
+         client/workers can sends several words through socket for various functions:
+         **sendFile** - when this word is received the manager start receiving the job file.
+         **newWorker** -  when this word is received the manager calls the udpPacket methods and worker will send the discover packet.
+         **receiveResults** - when this word is received the manager sends the results file to the client.
         """
         while True:
             try:
@@ -75,10 +77,22 @@ class managerService(object):
                 return False
 
     def receive_file_from_client(self, client_socket, address):
+    	"""
+    	this functions receives files from the client/worker by sending the phrase and then start receiving process by calling receive_file method from sockTools library.
+        - parameters: client_socket, address::
+         -client_socket - the socket that transfers the client data.
+         -address - client address for filenames and debugging.
+         """
         sockTools.send_and_encode(client_socket, "Please send the file...")
         sockTools.receiveFile(client_socket, address[0])
 
     def add_new_worker(self, client_socket):
+    	"""
+        this function add new worker to the system and to the database.
+        - parameters: client_socket::
+         -client_socket - the socket that transfers the client data.        
+          
+        """
         filename = client_socket.recv_and_decode(client_socket)
 
 

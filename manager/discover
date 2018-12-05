@@ -5,13 +5,21 @@ import re
 import subprocess
 import socketLib as sockTools
 
-def sendUDPPacket(data):
+def sendUDPPacket(data, address = None):
+    """
+    this functions sends simple UDPPacket to specific address or broadcast address by default with data specified by:
+creating a socket using create socket method, extracting broadcast address if needed and than send the message to the address.
+        - parameters: data, address::
+         -data - data that should be sended through the socket
+         -address - (default: broadcast) addresd that udp packet should be send to.
+    """
     sock = sockTools.create_socket(isTCP = False)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     #extracting broadcast address
     unparsedIpOutput = subprocess.check_output(["ip", "a"])
     splitted = re.findall( r'brd [\d.-]+ scope', str(unparsedIpOutput))
-    broadCastAddress = splitted[0].split()[1]
+    if not address:
+    	broadCastAddress = splitted[0].split()[1]
     port = 4444
     data = data.encode()
     sock.sendto(data, (broadCastAddress, port))
