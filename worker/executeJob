@@ -2,14 +2,15 @@
 import subprocess
 
 
-def run_file(filename_to_run, filename_to_store_output):
+def run_file(filename_to_run):
+	output_file = "result" + filename_to_run
 	subprocess.call(["chmod", "+x", filename_to_run])
 	result = subprocess.Popen(['bash', filename_to_run])
-	print(result, open(filename_to_store_output, "w"))
+	print(result, open("jobs_results/" + output_file, "w"))
 
 
 def main():
-    run_file("abc", "jobs_results/")
+    run_file("abc")
 
 
 if __name__ == '__main__':
