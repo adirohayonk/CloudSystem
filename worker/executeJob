@@ -4,8 +4,8 @@ import subprocess
 
 def run_file(filename_to_run, filename_to_store_output):
 	subprocess.call(["chmod", "+x", filename_to_run])
-    result = subprocess.Popen(['bash', filename_to_run])
-    print(result, open(filename_to_store_output, "w"))
+	result = subprocess.Popen(['bash', filename_to_run])
+	print(result, open(filename_to_store_output, "w"))
 
 
 def main():
