@@ -33,45 +33,45 @@ def receiveDiscoverInfo():
 	ip = "0.0.0.0"
 	port = 4444
 	sock = sockTools.create_socket(isTCP = False)
-    sock.bind((ip, port))
-    while True:
-        data = sock.recvfrom(1024)
-        data = str(data)
-        if data[0:10] == "discovered":
-            information = data.split(":")
-            break 
-    return information
+	sock.bind((ip, port))
+	while True:
+		data = sock.recvfrom(1024)
+		data = str(data)
+		if data[0:10] == "discovered":
+			information = data.split(":")
+			break 
+	return information
 
 
 def receiveDiscoverPacket():
-	    """
+	 """
     this function receives the Discover packet and call the function that collect the relevant information on the worker side. 
     the function returns the information unparsed.
     """
 	ip = "0.0.0.0"
 	port = 4444 
-    sock = sockTools.create_socket(isTCP = False)
-    sock.bind((ip, port))
-    while True:
-        data = sock.recvfrom(1024)
-        data = str(data)
-        print(data)
-        print(data[0:8])
-        if (data.find("discover")) == 0
-            information = gatherInformation()
-            break
-    return(information.encode()) 
+	sock = sockTools.create_socket(isTCP = False)
+	sock.bind((ip, port))
+	while True:
+		data = sock.recvfrom(1024)
+		data = str(data)
+		print(data)
+		print(data[0:8])
+		if (data.find("discover")) == 0
+			information = gatherInformation()
+			break
+	return(information.encode()) 
 
 def main():
-    if sys.argv[1] == "a":
-        sendUDPPacket("discover")
-    elif sys.argv[1] == "b": 
-        a = receiveDiscoverPacket()
-        print(a)
-        sendUDPPacket("discovered"+":"+a)
-    else:
-        receiveDiscoverInfo()
+	if sys.argv[1] == "a"
+		sendUDPPacket("discover")
+	elif sys.argv[1] == "b": 
+		a = receiveDiscoverPacket()
+		print(a)
+		sendUDPPacket("discovered"+":"+a)
+	else:
+	receiveDiscoverInfo()
 
 
 if __name__ == "__main__":
-   main() 
+	main() 
