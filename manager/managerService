@@ -84,7 +84,8 @@ class managerService(object):
          -address - client address for filenames and debugging.
          """
         sockTools.send_and_encode(client_socket, "Please send the file...")
-        sockTools.receiveFile(client_socket, address[0])
+        fileName = sockTools.receiveFile(client_socket, address[0])
+        
 
     def add_new_worker(self, client_socket):
     	"""

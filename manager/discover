@@ -48,8 +48,8 @@ def receiveDiscoverPacket():
     this function receives the Discover packet and call the function that collect the relevant information on the worker side. 
     the function returns the information unparsed.
     """
-    ip = "0.0.0.0"
-    port = 4444 
+	ip = "0.0.0.0"
+	port = 4444 
     sock = sockTools.create_socket(isTCP = False)
     sock.bind((ip, port))
     while True:
