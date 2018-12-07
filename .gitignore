@@ -4,4 +4,5 @@ test
 __pycache__/fileManagementLib.cpython-37.pyc
 clients_jobs/*
 .vscode/*
-manager/clients_jobs/[.*
+lib/__pycache__/*
+worker/__pycache__/*.pyc

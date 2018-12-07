@@ -36,13 +36,19 @@ def receiveDiscoverInfo():
 	port = 4444
 	sock = sockTools.create_socket(isTCP = False)
 	sock.bind((ip, port))
+	informationList = list() 
 	while True:
-		data = sock.recvfrom(1024)
-		data = str(data)
-		if data[0:10] == "discovered":
-			information = data.split(":")
-			break 
-	return information
+		try:
+			data, addr = sock.recvfrom(1024)
+			data = data.decode()
+			print("data from info func {}".format(data))
+			if data[0:10] == "discovered":
+				informationList = data.split(":")
+				informationList = informationList[1:]
+				break
+		except socket.timeout:
+			return None, None
+	return informationList, addr
 
 
 def receiveDiscoverPacket():
@@ -54,19 +60,35 @@ def receiveDiscoverPacket():
 	port = 4444 
 	sock = sockTools.create_socket(isTCP = False)
 	sock.bind((ip, port))
-	information = "discovered:"
-	while True:
-		data, addr = sock.recvfrom(1024)
-		data = str(data) 
-		if  (data.find("discover") != -1):
-			information += sysTools.gatherInformation()
-			sock.sendto(information, (addr, 4444))
+	information = "discovered:{}".format(sysTools.gatherInformation())
+	information = information.encode()
+	Discovered = False
+	while not Discovered:
+		try:
+			data, addr = sock.recvfrom(1024)
+			data = str(data) 
+			if  (data.find("discover") != -1):
+				sock.sendto(information, (addr[0], 4444))
+			if  (data.find(sysTools.getSystemIp()) != -1):
+				print("Worker Discovered")
+				Discovered = True	
+		except socket.timeout:
+			print("Socket timedout, receiving again...")
 
-def discoverWorkers(numberOfWorkers)
+def discoverWorkers(numberOfWorkers):
 	currentWorkerNumber = 0
 	workersInformation = dict()
+	knownClients = []
 	while currentWorkerNumber != numberOfWorkers:
 		sendUDPPacket("discover")
-		workersInformation[currentWorkerNumber] = receiveDiscoverInfo()
-		print("Worker number {} discoverd info is {}".format(currentWorkerNumber,workersInformation[currentWorkerNumber]))
-		currentNumberOfWorkers+=1
+		information, addr = receiveDiscoverInfo()	
+		print(information)
+		if information:
+			if addr[0] in knownClients:
+				sendUDPPacket("{} Discovered")
+			else:
+				workersInformation[currentWorkerNumber] = information 
+				print("Worker {} discoverd info is {}".format(information[0],information))
+				sendUDPPacket("{} Discovered")
+				currentWorkerNumber+=1
+				knownClients.append(addr[0])

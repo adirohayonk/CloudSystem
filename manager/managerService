@@ -9,96 +9,96 @@ import fileManagementLib as fileM
 import discover
 
 class managerService(object):
-    """
-     class: managerService
+	"""
+	 class: managerService
 
-     this class is a service for the manager server.
-     this service should run in the background, unless debugging output is needed.
-     
-       -parameters: host, port::
-         -host - the host that socket should listen on.
-         -port - port for the socket.
-         
-     this class will create the socket and store it on mySocket variable.
-     
-     after running the class user should call listen function for server to start listening.
-     """
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
-        fileM.createEnv()
-        discover.discoverWorkers()
+	 this class is a service for the manager server.
+	 this service should run in the background, unless debugging output is needed.
+	 
+	   -parameters: host, port::
+		 -host - the host that socket should listen on.
+		 -port - port for the socket.
+		 
+	 this class will create the socket and store it on mySocket variable.
+	 
+	 after running the class user should call listen function for server to start listening.
+	 """
+	def __init__(self, host, port):
+		self.host = host
+		self.port = port
+		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
+		fileM.createEnv()
+		discover.discoverWorkers(3)
 
-    def listen(self):
-        """
-        This function is waiting for incoming connections.
-        when a connection arrive to the server socket.
-        socket is assigned to this connection and a new thread is created
-        so connections could occurs simultaniously.
-        then the thread calls listen_to_client function.
-        
-        """
-        self.mySocket.listen(5)
-        print("Server Started")
-        while True:
-            client_socket, address = self.mySocket.accept()
-            client_socket.settimeout(60)
-            threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
+	def listen(self):
+		"""
+		This function is waiting for incoming connections.
+		when a connection arrive to the server socket.
+		socket is assigned to this connection and a new thread is created
+		so connections could occurs simultaniously.
+		then the thread calls listen_to_client function.
+		
+		"""
+		self.mySocket.listen(5)
+		print("Server Started")
+		while True:
+			client_socket, address = self.mySocket.accept()
+			client_socket.settimeout(60)
+			threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
 
-    def listen_to_client(self, client_socket, address):
-        """
-        this functions listen to client waiting to receive new information and act accordingly.
-        - parameters: client_socket, address::
-         -client_socket - the socket that transfers the client data.
-         -address - client address for filenames and debugging.
-         
-         client/workers can sends several words through socket for various functions:
-         **sendFile** - when this word is received the manager start receiving the job file.
-         **newWorker** -  when this word is received the manager calls the udpPacket methods and worker will send the discover packet.
-         **receiveResults** - when this word is received the manager sends the results file to the client.
-        """
-        while True:
-            try:
-                data_from_client = sockTools.recv_and_decode(client_socket)
-                print("data:" + data_from_client)
-                if data_from_client == "":
-                    print("{} Disconnected".format(address))
-                    client_socket.close()
-                    return False
-                if data_from_client == "sendFile":
-                    self.receive_file_from_client(client_socket, address)
-                if data_from_client == "newWorker":
-                    self.add_new_worker(client_socket)
-                if data_from_client == "receiveResults":
-                    self.add_new_worker(client_socket)
+	def listen_to_client(self, client_socket, address):
+		"""
+		this functions listen to client waiting to receive new information and act accordingly.
+		- parameters: client_socket, address::
+		 -client_socket - the socket that transfers the client data.
+		 -address - client address for filenames and debugging.
+		 
+		 client/workers can sends several words through socket for various functions:
+		 **sendFile** - when this word is received the manager start receiving the job file.
+		 **newWorker** -  when this word is received the manager calls the udpPacket methods and worker will send the discover packet.
+		 **receiveResults** - when this word is received the manager sends the results file to the client.
+		"""
+		while True:
+			try:
+				data_from_client = sockTools.recv_and_decode(client_socket)
+				print("data:" + data_from_client)
+				if data_from_client == "":
+					print("{} Disconnected".format(address))
+					client_socket.close()
+					return False
+				if data_from_client == "sendFile":
+					self.receive_file_from_client(client_socket, address)
+				if data_from_client == "newWorker":
+					self.add_new_worker(client_socket)
+				if data_from_client == "receiveResults":
+					self.add_new_worker(client_socket)
 
-            except socket.error:
-                print("{} Disconnected".format(address))
-                client_socket.close()
-                return False
+			except socket.error:
+				print("{} Disconnected".format(address))
+				client_socket.close()
+				return False
 
-    def receive_file_from_client(self, client_socket, address):
-    	"""
-    	this functions receives files from the client/worker by sending the phrase and then start receiving process by calling receive_file method from sockTools library.
-        - parameters: client_socket, address::
-         -client_socket - the socket that transfers the client data.
-         -address - client address for filenames and debugging.
-         """
-        sockTools.send_and_encode(client_socket, "Please send the file...")
-        fileName = sockTools.receiveFile(client_socket, address[0])
-        
+	def receive_file_from_client(self, client_socket, address):
+		"""
+		this functions receives files from the client/worker by sending the phrase and then start receiving process by calling receive_file method from sockTools library.
+		- parameters: client_socket, address::
+		 -client_socket - the socket that transfers the client data.
+		 -address - client address for filenames and debugging.
+		 """
+		sockTools.send_and_encode(client_socket, "Please send the file...")
+		fileName = sockTools.receiveFile(client_socket, address[0])
+		
 
-    def add_new_worker(self, client_socket):
-    	"""
-        this function add new worker to the system and to the database.
-        - parameters: client_socket::
-         -client_socket - the socket that transfers the client data.        
-          
-        """
-        filename = client_socket.recv_and_decode(client_socket)
+	def add_new_worker(self, client_socket):
+		"""
+		this function add new worker to the system and to the database.
+		- parameters: client_socket::
+		 -client_socket - the socket that transfers the client data.        
+		  
+		"""
+		filename = client_socket.recv_and_decode(client_socket)
 
 
 if __name__ == "__main__":
-    port_num = 4444
-    managerService('0.0.0.0', port_num).listen()
+	port_num = 4444
+	managerService('0.0.0.0', port_num).listen()
