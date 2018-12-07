@@ -6,6 +6,7 @@ import subprocess
 import socketLib as sockTools
 import system as sysTools
 
+
 def sendUDPPacket(data, address = None):
 	"""
 	this function sends simple UDPPacket to specific address or broadcast address by default with data specified by:
@@ -87,6 +88,7 @@ def discoverWorkers(numberOfWorkers):
 			if addr[0] in knownClients:
 				sendUDPPacket("{} Discovered")
 			else:
+				
 				workersInformation[currentWorkerNumber] = information 
 				print("Worker {} discoverd info is {}".format(information[0],information))
 				sendUDPPacket("{} Discovered")
