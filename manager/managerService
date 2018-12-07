@@ -6,6 +6,7 @@ import socket
 import threading
 import socketLib as sockTools
 import fileManagementLib as fileM
+import discover
 
 class managerService(object):
     """
@@ -27,6 +28,7 @@ class managerService(object):
         self.port = port
         self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
         fileM.createEnv()
+        discover.discoverWorkers()
 
     def listen(self):
         """

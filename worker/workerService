@@ -7,6 +7,7 @@ import threading
 import socketLib as sockTools
 import fileManagementLib as fileM
 import executeJob
+import discover
 
 class workerService(object):
 	"""
@@ -28,6 +29,8 @@ class workerService(object):
         self.port = port
         self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
         fileM.createEnv()
+        discover.   
+
 
     def listen(self):
     	"""
