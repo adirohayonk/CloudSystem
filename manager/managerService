@@ -7,6 +7,9 @@ import threading
 import socketLib as sockTools
 import fileManagementLib as fileM
 import discover
+import system
+import databaseLib
+import operator
 
 class managerService(object):
 	"""
@@ -27,8 +30,11 @@ class managerService(object):
 		self.host = host
 		self.port = port
 		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
+		self.db = databaseLib.DbController(system.getSystemIp())
+		self.workersList = self.db.get_workers_list()
 		fileM.createEnv()
-		discover.discoverWorkers(3)
+		workersInformation = discover.discoverWorkers(3)
+		discover.updateWorkersInDb(self.db,workersInformation)
 
 	def listen(self):
 		"""
@@ -53,7 +59,7 @@ class managerService(object):
 		 -client_socket - the socket that transfers the client data.
 		 -address - client address for filenames and debugging.
 		 
-		 client/workers can sends several words through socket for various functions:
+		 client/workersi can sends several words through socket for various functions:
 		 **sendFile** - when this word is received the manager start receiving the job file.
 		 **newWorker** -  when this word is received the manager calls the udpPacket methods and worker will send the discover packet.
 		 **receiveResults** - when this word is received the manager sends the results file to the client.
@@ -68,6 +74,7 @@ class managerService(object):
 					return False
 				if data_from_client == "sendFile":
 					self.receive_file_from_client(client_socket, address)
+					self.evaluteWorkers()
 				if data_from_client == "newWorker":
 					self.add_new_worker(client_socket)
 				if data_from_client == "receiveResults":
@@ -87,8 +94,13 @@ class managerService(object):
 		 """
 		sockTools.send_and_encode(client_socket, "Please send the file...")
 		fileName = sockTools.receiveFile(client_socket, address[0])
+		nextFreeWorker = self.evaluteWorkers()
+		print(type(nextFreeWorker))
+		workerIP = self.db.get_host_data(nextFreeWorker, "ipaddr")	
+		worker_socket = sockTools.create_and_bind_socket(workerIP, "4444")
+		sockTools.sendFile(worker_socket, fileName)
 		
-
+		
 	def add_new_worker(self, client_socket):
 		"""
 		this function add new worker to the system and to the database.
@@ -97,6 +109,17 @@ class managerService(object):
 		  
 		"""
 		filename = client_socket.recv_and_decode(client_socket)
+
+	def evaluteWorkers(self):
+		workersJobsNum = dict() 
+		for worker in self.workersList:
+			workerJobsInProg = self.db.get_worker_jobs(worker, 'IN-PROGRESS')
+			workersJobsNum[worker] = len(workerJobsInProg)
+			print("worker: {}, has {} jobs".format(worker,workersJobsNum[worker]))
+		workersJobsNum = sorted(workersJobsNum.items(), key = lambda kv: kv[1])
+		nextFreeWorker = workersJobsNum[0][0]
+		print("NextFreeWorker :",nextFreeWorker)
+		return nextFreeWorker
 
 
 if __name__ == "__main__":

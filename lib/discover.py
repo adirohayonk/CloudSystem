@@ -5,7 +5,8 @@ import re
 import subprocess
 import socketLib as sockTools
 import system as sysTools
-
+import databaseLib
+import time
 
 def sendUDPPacket(data, address = None):
 	"""
@@ -42,7 +43,6 @@ def receiveDiscoverInfo():
 		try:
 			data, addr = sock.recvfrom(1024)
 			data = data.decode()
-			print("data from info func {}".format(data))
 			if data[0:10] == "discovered":
 				informationList = data.split(":")
 				informationList = informationList[1:]
@@ -68,6 +68,7 @@ def receiveDiscoverPacket():
 		try:
 			data, addr = sock.recvfrom(1024)
 			data = str(data) 
+			print("Data Received: ",data)
 			if  (data.find("discover") != -1):
 				sock.sendto(information, (addr[0], 4444))
 			if  (data.find(sysTools.getSystemIp()) != -1):
@@ -83,14 +84,24 @@ def discoverWorkers(numberOfWorkers):
 	while currentWorkerNumber != numberOfWorkers:
 		sendUDPPacket("discover")
 		information, addr = receiveDiscoverInfo()	
-		print(information)
 		if information:
 			if addr[0] in knownClients:
 				sendUDPPacket("{} Discovered")
 			else:
-				
 				workersInformation[currentWorkerNumber] = information 
-				print("Worker {} discoverd info is {}".format(information[0],information))
-				sendUDPPacket("{} Discovered")
+				print("{} discoverd info is {}".format(information[0],information))
+				sendUDPPacket("{} Discovered".format(str(addr)),addr[0])
 				currentWorkerNumber+=1
 				knownClients.append(addr[0])
+		time.sleep(5)
+	return workersInformation
+
+def updateWorkersInDb(db, workersInformation):
+	print("workers information ", workersInformation)	
+	db.clean_table('hosts')
+	for workerId,workerData in workersInformation.items():
+		print("worker data is :",workerData)
+		db.insert_to_db("hosts",workerData)
+		
+			
+			

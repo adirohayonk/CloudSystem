@@ -43,7 +43,6 @@ class workerService(object):
 		while True:
 			try:
 				server_socket, address = self.mySocket.accept()
-				server_socket.settimeout(60)
 				threading.Thread(target=self.listen_to_server, args=(server_socket, address)).start()
 			except socket.timeout:
 				print("Timeout reached, waiting for a connection again")
