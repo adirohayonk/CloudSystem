@@ -11,8 +11,6 @@ def openFile(folder ,filename):
 
 def createEnv():
     jobsFolder = 'jobs/'
-    jobsResultsFolder = 'jobs_results/'
     pathlib.Path(jobsFolder).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(jobsResultsFolder).mkdir(parents=True, exist_ok=True)
     
     
