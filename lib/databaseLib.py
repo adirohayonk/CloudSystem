@@ -1,4 +1,5 @@
 import mysql.connector
+import traceback 
 
 class DbController:
 	"""
@@ -29,28 +30,33 @@ class DbController:
 			sql = "INSERT INTO " \
 				  "hosts(hostname, ipaddr, totalMem, CPUnum)" \
 				  "VALUES (%s, %s, %s, %s)"
-		else:
+		elif table == 'jobs':
 			sql = "INSERT INTO " \
-				  "jobs(id, fileName, filePath, outputPath) " \
+				  "jobs(jobid, fileName, hostname, status)" \
 				  "VALUES (%s, %s, %s, %s)"
 		try:
 			self.cursor.execute(sql, data)
 		except:
 			print("unable to execute:{}{}".format(sql,data))
+			print(traceback.format_exc())
 
 	def update_host(self, host, field, fieldContent):
 		print("host {}, field {} , fieldContent {} ".format(host,field,fieldContent))
 		sql = "UPDATE hosts SET {} = %s WHERE hostname = %s".format(field)
 		self.cursor.execute(sql,(fieldContent,host))
 
+	def update_job_status(self, jobID, status):
+		sql = "UPDATE jobs SET status = '{}' WHERE jobid = '{}'".format(status, jobID)
+		self.cursor.execute(sql)
+
 	def get_host_data(self, host, field = "*"):
-		sql = "SELECT {} from hosts WHERE hostname = %s".format(field)
+		sql = "SELECT {} from hosts WHERE hostname = '{}'".format(field, host)
 		self.cursor.execute(sql, host)
 		hostData = self.cursor.fetchone()
 		return hostData
 
 	def get_job_data(self, jobID, field = "*"):
-		sql = "SELECT {} from jobs WHERE jo".format(field, host, status)
+		sql = "SELECT {} from jobs WHERE jobid = '{}'".format(field, jobID)
 		self.cursor.execute(sql)
 		jobsData = self.cursor.fetchone()
 		return jobsData
@@ -67,6 +73,12 @@ class DbController:
 		listOfWorkersUnparsed = self.cursor.fetchall()
 		listOfWorkers = [i[0] for i in listOfWorkersUnparsed]
 		return listOfWorkers
+
+	def get_max_jobid(self):
+		sql = "SELECT MAX(jobid) from jobs"
+		self.cursor.execute(sql)
+		maxJobid = self.cursor.fetchone()
+		return maxJobid
 
 	def clean_table(self, table):
 		sql = "TRUNCATE TABLE {}".format(table)
