@@ -8,6 +8,8 @@ import socketLib as sockTools
 import fileManagementLib as fileM
 import executeJob
 import discover
+import databaseLib
+import system
 
 class workerService(object):
 	"""
@@ -27,8 +29,10 @@ class workerService(object):
 		self.host = host
 		self.port = port
 		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
+		self.myHostname = system.getSystemHostname()
 		fileM.createEnv()
-		discover.receiveDiscoverPacket()
+		self.managerAddress = discover.receiveDiscoverPacket()
+		self.db = databaseLib.DbController(self.managerAddress)
 
 	def listen(self):
 		"""
@@ -60,7 +64,6 @@ class workerService(object):
 		while True:
 			try:
 				data_from_server = sockTools.recv_and_decode(server_socket)
-				print("data:" + data_from_server)
 				if data_from_server == "":
 					print("{} Disconnected".format(address))
 					server_socket.close()
@@ -82,7 +85,9 @@ class workerService(object):
 		 """
 		sockTools.send_and_encode(server_socket, "Please send the file...")
 		fileName = sockTools.receiveFile(server_socket, address[0])
-		executeJob.run_file(fileName)
+		outputFileName = executeJob.run_file(fileName, self.db, self.myHostname)
+		if outputFileName:
+			sockTools.sendFile(server_socket, outputFileName)
 		
 
 if __name__ == "__main__":
