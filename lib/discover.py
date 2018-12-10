@@ -64,18 +64,20 @@ def receiveDiscoverPacket():
 	information = "discovered:{}".format(sysTools.gatherInformation())
 	information = information.encode()
 	Discovered = False
+	managerAddress = ""
 	while not Discovered:
 		try:
 			data, addr = sock.recvfrom(1024)
 			data = str(data) 
-			print("Data Received: ",data)
 			if  (data.find("discover") != -1):
 				sock.sendto(information, (addr[0], 4444))
 			if  (data.find(sysTools.getSystemIp()) != -1):
 				print("Worker Discovered")
+				managerAddress = addr[0]
 				Discovered = True	
 		except socket.timeout:
-			print("Socket timedout, receiving again...")
+			print("Socket timed out, receiving again...")
+	return managerAddress
 
 def discoverWorkers(numberOfWorkers):
 	currentWorkerNumber = 0
@@ -97,10 +99,8 @@ def discoverWorkers(numberOfWorkers):
 	return workersInformation
 
 def updateWorkersInDb(db, workersInformation):
-	print("workers information ", workersInformation)	
 	db.clean_table('hosts')
 	for workerId,workerData in workersInformation.items():
-		print("worker data is :",workerData)
 		db.insert_to_db("hosts",workerData)
 		
 			
