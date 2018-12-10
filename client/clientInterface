@@ -35,9 +35,6 @@ def main():
     elif arguments.newWorker:
         print("newWorker implementation")
     elif arguments.file:
-       sockTools.send_and_encode(sock, "sendFile")
-       response = sockTools.recv_and_decode(sock)
-       print(response)
        sockTools.sendFile(sock, arguments.file)
 
 
