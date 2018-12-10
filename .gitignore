@@ -6,3 +6,5 @@ clients_jobs/*
 .vscode/*
 lib/__pycache__/*
 worker/__pycache__/*.pyc
+worker/jobs/*
+manager/jobs/*
