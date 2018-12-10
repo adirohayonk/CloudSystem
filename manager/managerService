@@ -10,6 +10,7 @@ import discover
 import system
 import databaseLib
 import operator
+import traceback
 
 class managerService(object):
 	"""
@@ -31,10 +32,10 @@ class managerService(object):
 		self.port = port
 		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
 		self.db = databaseLib.DbController(system.getSystemIp())
-		self.workersList = self.db.get_workers_list()
 		fileM.createEnv()
 		workersInformation = discover.discoverWorkers(3)
 		discover.updateWorkersInDb(self.db,workersInformation)
+		self.workersList = self.db.get_workers_list()
 
 	def listen(self):
 		"""
@@ -67,14 +68,12 @@ class managerService(object):
 		while True:
 			try:
 				data_from_client = sockTools.recv_and_decode(client_socket)
-				print("data:" + data_from_client)
 				if data_from_client == "":
 					print("{} Disconnected".format(address))
 					client_socket.close()
 					return False
 				if data_from_client == "sendFile":
 					self.receive_file_from_client(client_socket, address)
-					self.evaluteWorkers()
 				if data_from_client == "newWorker":
 					self.add_new_worker(client_socket)
 				if data_from_client == "receiveResults":
@@ -82,6 +81,7 @@ class managerService(object):
 
 			except socket.error:
 				print("{} Disconnected".format(address))
+				print(traceback.format_exc())
 				client_socket.close()
 				return False
 
@@ -95,10 +95,12 @@ class managerService(object):
 		sockTools.send_and_encode(client_socket, "Please send the file...")
 		fileName = sockTools.receiveFile(client_socket, address[0])
 		nextFreeWorker = self.evaluteWorkers()
-		print(type(nextFreeWorker))
-		workerIP = self.db.get_host_data(nextFreeWorker, "ipaddr")	
-		worker_socket = sockTools.create_and_bind_socket(workerIP, "4444")
-		sockTools.sendFile(worker_socket, fileName)
+		workerIP = (self.db.get_host_data(nextFreeWorker, "ipaddr"))[0]
+		print("Selected worker {} worker ip: {}".format(nextFreeWorker, workerIP))
+		worker_socket = sockTools.create_socket(isTCP = True)
+		worker_socket.connect((workerIP, 4444))
+		sockTools.sendFile(worker_socket, "jobs/" + fileName)
+		sockTools.receiveFile(worker_socket, "jobResult-" + fileName)
 		
 		
 	def add_new_worker(self, client_socket):
