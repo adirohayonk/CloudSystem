@@ -5,8 +5,8 @@ import subprocess
 import re
 
 def gatherInformation():
-    hostname = subprocess.check_output(["hostname"]) 
-    hostname = hostname.decode()
+    #getting hostname
+    hostname = getSystemHostname()
 
     #getting ip address
     ipaddr = getSystemIp()
@@ -25,3 +25,9 @@ def getSystemIp():
     splitted = re.findall( r'src [\d.-]+ metric', str(unparsedIpOutput))
     ipaddr = splitted[0].split()[1]
     return ipaddr
+
+def getSystemHostname():
+    hostname = subprocess.check_output(["hostname"]) 
+    hostname = hostname.decode()
+    hostname = hostname.replace("\n","")
+    return hostname
