@@ -113,10 +113,16 @@ class managerService(object):
 		filename = client_socket.recv_and_decode(client_socket)
 
 	def evaluteWorkers(self):
-		workersJobsNum = dict() 
+		""" this method finds the worker with least jobs and returns his hostname
+		
+		Returns:
+			String -- most available worker 
+		"""
+
+		workersJobsNum = dict() #workers jobs number will by stored in dictionary
 		for worker in self.workersList:
-			workerJobsInProg = self.db.get_worker_jobs(worker, 'IN-PROGRESS')
-			workersJobsNum[worker] = len(workerJobsInProg)
+			workerJobsInProg = self.db.get_worker_jobs(worker, 'IN-PROGRESS') #get only IN-PROGRESS jobs from db
+			workersJobsNum[worker] = len(workerJobsInProg) #store number of jobs
 			print("worker: {}, has {} jobs".format(worker,workersJobsNum[worker]))
 		workersJobsNum = sorted(workersJobsNum.items(), key = lambda kv: kv[1])
 		nextFreeWorker = workersJobsNum[0][0]
