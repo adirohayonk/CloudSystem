@@ -31,11 +31,11 @@ class managerService(object):
 		self.host = host
 		self.port = port
 		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
-		self.db = databaseLib.DbController(system.getSystemIp())
-		fileM.createEnv()
-		workersInformation = discover.discoverWorkers(3)
+		self.db = databaseLib.DbController(system.getSystemIp()) #get controller for the db
+		fileM.createEnv() #create environment folders
+		workersInformation = discover.discoverWorkers(3) #get workers information 
 		discover.updateWorkersInDb(self.db,workersInformation)
-		self.workersList = self.db.get_workers_list()
+		self.workersList = self.db.get_workers_list() #store workers list for local use
 
 	def listen(self):
 		"""
@@ -49,9 +49,9 @@ class managerService(object):
 		self.mySocket.listen(5)
 		print("Server Started")
 		while True:
-			client_socket, address = self.mySocket.accept()
+			client_socket, address = self.mySocket.accept() #accept on incoming connetion
 			client_socket.settimeout(60)
-			threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start()
+			threading.Thread(target=self.listen_to_client, args=(client_socket, address)).start() # creating new thread for the connection 
 
 	def listen_to_client(self, client_socket, address):
 		"""
@@ -67,7 +67,7 @@ class managerService(object):
 		"""
 		while True:
 			try:
-				data_from_client = sockTools.recv_and_decode(client_socket)
+				data_from_client = sockTools.recv_and_decode(client_socket) #recv message from client
 				if data_from_client == "":
 					print("{} Disconnected".format(address))
 					client_socket.close()
@@ -78,7 +78,6 @@ class managerService(object):
 					self.add_new_worker(client_socket)
 				if data_from_client == "receiveResults":
 					self.add_new_worker(client_socket)
-
 			except socket.error:
 				print("{} Disconnected".format(address))
 				print(traceback.format_exc())
@@ -93,14 +92,14 @@ class managerService(object):
 		 -address - client address for filenames and debugging.
 		 """
 		sockTools.send_and_encode(client_socket, "Please send the file...")
-		fileName = sockTools.receiveFile(client_socket, address[0])
-		nextFreeWorker = self.evaluteWorkers()
-		workerIP = (self.db.get_host_data(nextFreeWorker, "ipaddr"))[0]
+		fileName = sockTools.receiveFile(client_socket, address[0]) #receive the file from client 
+		nextFreeWorker = self.evaluteWorkers() #find the worker with least jobs
+		workerIP = (self.db.get_host_data(nextFreeWorker, "ipaddr"))[0] #store worker ip 
 		print("Selected worker {} worker ip: {}".format(nextFreeWorker, workerIP))
-		worker_socket = sockTools.create_socket(isTCP = True)
+		worker_socket = sockTools.create_socket(isTCP = True) 
 		worker_socket.connect((workerIP, 4444))
-		sockTools.sendFile(worker_socket, "jobs/" + fileName)
-		sockTools.receiveFile(worker_socket, "jobResult-" + fileName)
+		sockTools.sendFile(worker_socket, "jobs/" + fileName) #send the file to worker
+		sockTools.receiveFile(worker_socket, "jobResult-" + fileName) #recieve output file
 		
 		
 	def add_new_worker(self, client_socket):
@@ -118,14 +117,13 @@ class managerService(object):
 		Returns:
 			String -- most available worker 
 		"""
-
 		workersJobsNum = dict() #workers jobs number will by stored in dictionary
 		for worker in self.workersList:
 			workerJobsInProg = self.db.get_worker_jobs(worker, 'IN-PROGRESS') #get only IN-PROGRESS jobs from db
 			workersJobsNum[worker] = len(workerJobsInProg) #store number of jobs
 			print("worker: {}, has {} jobs".format(worker,workersJobsNum[worker]))
-		workersJobsNum = sorted(workersJobsNum.items(), key = lambda kv: kv[1])
-		nextFreeWorker = workersJobsNum[0][0]
+		workersJobsNum = sorted(workersJobsNum.items(), key = lambda kv: kv[1])# sort workers by number of jobs
+		nextFreeWorker = workersJobsNum[0][0] # store the worker with least jobs
 		print("NextFreeWorker :",nextFreeWorker)
 		return nextFreeWorker
 
