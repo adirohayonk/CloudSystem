@@ -4,6 +4,17 @@ import subprocess
 
 
 def run_file(filename_to_run, db, hostname):
+	"""
+	
+	Arguments:
+		filename_to_run {string} -- filename that should be executed by the function
+		db {[type]} -- [description]
+		hostname {[type]} -- [description]
+	
+	Returns:
+		[type] -- [description]
+	"""
+
 	realFileLocation = "jobs/" +filename_to_run
 	output_file = "results-" + filename_to_run
 	subprocess.call(["chmod", "+x", realFileLocation])
