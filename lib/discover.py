@@ -64,7 +64,7 @@ def receiveDiscoverPacket():
 	information = "discovered:{}".format(sysTools.gatherInformation())
 	information = information.encode()
 	Discovered = False
-	managerAddress = ""
+	managerAddress = str() 
 	while not Discovered:
 		try:
 			data, addr = sock.recvfrom(1024)

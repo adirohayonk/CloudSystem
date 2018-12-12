@@ -14,18 +14,21 @@ def run_file(filename_to_run, db, hostname):
 	Returns:
 		String -- output_file name 
 	"""
-
-	realFileLocation = "jobs/" +filename_to_run #job file are in jobs folder
-	output_file = "results-" + filename_to_run #output file should have a perfix of results
-	subprocess.call(["chmod", "+x", realFileLocation]) #change the permission of the file to make it executeable
+	realFileLocation = "jobs/" +filename_to_run 
+	output_file = "results-" + filename_to_run 
+	#change the permission of the file to make it executeable
+	subprocess.call(["chmod", "+x", realFileLocation]) 
 	jobID = 1
-	maxJobID = db.get_max_jobid()[0] # find current max jobID
-	if maxJobID:  #if no jobs at all jobID will be 1
-		jobID = maxJobID + 1 #increase jobID by 1 in order to make it unique
-	jobData = [jobID, filename_to_run, hostname, "IN-PROGRESS"] #list with the data the should be written to database
-	db.insert_to_db("jobs", jobData) #insert data to db
-	result = subprocess.check_output(['bash', realFileLocation]) #run the job and store the output
-	db.update_job_status(jobID, "COMPLETED") #after execuion completed change job status in db
+	maxJobID = db.get_max_jobid()[0] 
+	if maxJobID:  
+		jobID = maxJobID + 1 
+	#list with the data that should be written to database
+	jobData = [jobID, filename_to_run, hostname, "IN-PROGRESS"] 
+	db.insert_to_db("jobs", jobData) 
+	#run the job and store the output
+	result = subprocess.check_output(['bash', realFileLocation]) 
+	#after execuion completed change job status in db
+	db.update_job_status(jobID, "COMPLETED") 
 	f = open("jobs/" + output_file, 'w') 
-	f.write(result.decode()) #write results to output_file
+	f.write(result.decode()) 
 	return output_file

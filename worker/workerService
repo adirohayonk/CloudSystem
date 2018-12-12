@@ -87,6 +87,8 @@ class workerService(object):
 		fileName = sockTools.receiveFile(server_socket, address[0])
 		outputFileName = executeJob.run_file(fileName, self.db, self.myHostname)
 		if outputFileName:
+			sockTools.send_and_encode(server_socket, "jobCompleted")
+			print("Sending outputFile :{} ".format(outputFileName))
 			sockTools.sendFile(server_socket, outputFileName)
 		
 
