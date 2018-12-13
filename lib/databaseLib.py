@@ -26,6 +26,12 @@ class DbController:
 		return mydb
 
 	def insert_to_db(self, table, data):
+	"""
+	This	 function insert data to database 
+	Arguments:
+		table {String} -- which table data should be inserted into.
+		data {list} -- list of data that should be inserted into the specific table.
+	"""
 		if table == 'hosts':
 			sql = "INSERT INTO " \
 				  "hosts(hostname, ipaddr, totalMem, CPUnum)" \
@@ -41,31 +47,78 @@ class DbController:
 			print(traceback.format_exc())
 
 	def update_host(self, host, field, fieldContent):
+	"""
+	This	 function maybe redundent
+	redundent
+	uneeded
+	uneeded
+	uneeded
+	redundent
+	"""
 		print("host {}, field {} , fieldContent {} ".format(host,field,fieldContent))
 		sql = "UPDATE hosts SET {} = %s WHERE hostname = %s".format(field)
 		self.cursor.execute(sql,(fieldContent,host))
 
 	def update_job_status(self, jobID, status):
+	"""
+	This	 function change the status of specific jobID
+	Arguments:
+		jobID {int} -- jobid to change the status for.
+		status {string} -- status to change to.
+	"""
 		sql = "UPDATE jobs SET status = '{}' WHERE jobid = '{}'".format(status, jobID)
 		self.cursor.execute(sql)
 
 	def update_job_status_by_filename(self, fileName, status):
+		"""
+	This	 function change the status of specific job by filename
+	Arguments:
+		fileName {string} -- file to change status to
+		status {string} -- status to change to.
+	"""
 		sql = "UPDATE jobs SET status = '{}' WHERE fileName = '{}'".format(status, fileName)
 		self.cursor.execute(sql)
 
 	def get_host_data(self, host, field = "*"):
+		"""
+	This	 function provide data based on host
+	Arguments:
+		host {string} -- hostname that data should be povided for
+		field {string} -- field or list of fields of the data(default: any field)
+		
+		return:
+		  tuple of tuples -- requested data
+	"""
 		sql = "SELECT {} from hosts WHERE hostname = '{}'".format(field, host)
 		self.cursor.execute(sql, host)
-		hostData = self.cursor.fetchone()
+		hostData = self.cursor.fetchall() # REMOVE change to fetchall
 		return hostData
 
 	def get_job_data(self, jobID, field = "*"):
+		"""
+	This	 function provide data based on jobID
+	Arguments:
+		jobID {int} -- jobID for the data
+		field {string} -- field or list of fields for the data(default: any field)
+		
+		return:
+		  tuple -- requested data(single row)
+	"""
 		sql = "SELECT {} from jobs WHERE jobid = '{}'".format(field, jobID)
 		self.cursor.execute(sql)
 		jobsData = self.cursor.fetchone()
 		return jobsData
 
 	def get_jobs_data(self, status = ""):
+	"""
+	This	 function provide data of all jobs based on status
+	Arguments:
+	
+		field {string} -- field or list of fields for the data(default: any field)
+		
+		return:
+		  list -- requested data(single row)
+	"""
 		sql = "SELECT * from jobs WHERE status = {}".format(status)
 		self.cursor.execute(sql)
 		jobsData = self.cursor.fetchall()
