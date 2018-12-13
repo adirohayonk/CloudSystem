@@ -5,8 +5,6 @@ sys.path.append('../lib/')
 import socket
 import threading
 import socketLib as sockTools
-import fileManagementLib as fileM
-import executeJob
 import discover
 import databaseLib
 import system
@@ -29,9 +27,11 @@ class workerService(object):
 		self.host = host
 		self.port = port
 		self.mySocket = sockTools.create_and_bind_socket(self.host, self.port)
-		self.myHostname = system.getSystemHostname()
-		fileM.createEnv()
-		self.managerAddress = discover.receiveDiscoverPacket()
+		system.createEnv()
+		# maybe improve this method to better performance
+		#self.managerAddress = discover.receiveDiscoverPacket()
+		# maybee improve this method to better performance
+		self.managerAddress = "192.168.1.17" 
 		self.db = databaseLib.DbController(self.managerAddress)
 
 	def listen(self):
@@ -64,13 +64,15 @@ class workerService(object):
 		while True:
 			try:
 				data_from_server = sockTools.recv_and_decode(server_socket)
+				print(data_from_server)
 				if data_from_server == "":
 					print("{} Disconnected".format(address))
 					server_socket.close()
 					return False
 				if data_from_server == "sendFile":
 					self.receive_file_from_server(server_socket, address)
-
+				if data_from_server == "receiveFile":
+					self.send_requested_file(server_socket)
 			except socket.error:
 				print("{} Disconnected".format(address))
 				server_socket.close()
@@ -83,13 +85,16 @@ class workerService(object):
 		 -server_socket - the socket that transfers the server data.
 		 -address - server address for filenames and debugging.
 		 """
-		sockTools.send_and_encode(server_socket, "Please send the file...")
-		fileName = sockTools.receiveFile(server_socket, address[0])
-		outputFileName = executeJob.run_file(fileName, self.db, self.myHostname)
-		if outputFileName:
-			sockTools.send_and_encode(server_socket, "jobCompleted")
-			print("Sending outputFile :{} ".format(outputFileName))
-			sockTools.sendFile(server_socket, outputFileName)
+		fileName = sockTools.receiveFile(server_socket)
+		outputFileName = system.run_file(fileName, self.db)
+
+	def send_requested_file(self, server_socket):
+		sockTools.send_and_encode(server_socket, "going to send Results file")
+		requestedJobID = sockTools.recv_and_decode(server_socket)
+		requestedFileName = (self.db.get_job_data(requestedJobID, "fileName"))[0]
+		filename = "results-" + requestedFileName
+		sockTools.sendFile(server_socket, filename)
+		server_socket.close()
 		
 
 if __name__ == "__main__":
