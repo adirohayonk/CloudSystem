@@ -1,6 +1,5 @@
 import sys
 sys.path.append('../lib/')
-import fileManagementLib as fileM
 import datetime
 import os
 import socket
@@ -35,34 +34,32 @@ def recv_and_decode(sock):
 	return decodedData
 
 
-def receiveFile(sock, filename):
-	fileSize = recv_and_decode(sock)
-	send_and_encode(sock, "File size is: " + fileSize + " Bytes "
-	 + "Tranferring file...")
-	currentTime = datetime.datetime.now().strftime("%d_%m-%X") 
-	storedFileName = filename + "-" + currentTime
-	print("Saving file filename is {}".format(storedFileName))
-	f = open("jobs/" + storedFileName, 'wb')
+def receiveFile(sock):
+	fileName = recv_and_decode(sock)
+	print("Saving file, filename is {}".format(fileName))
+	send_and_encode(sock, fileName)
+	f = open("jobs/" + fileName, 'wb')
 	data = sock.recv(1024)
 	f.write(data)
 	while data:
-		data = sock.recv(1024)
+		print(data)
 		f.write(data)
+		data = sock.recv(1024)
 	print("File Transfer completed")
 	send_and_encode(sock, "File transfer completed")
-	return storedFileName
+	f.close()
+	sock.close()
+	return fileName
 
 
-def sendFile(sock, filename):
-	send_and_encode(sock, "sendFile")
-	response = recv_and_decode(sock)
-	if os.path.isfile(filename):
-		fileSize = os.path.getsize(filename)
-		send_and_encode(sock, str(fileSize))
+def sendFile(sock, filename, fileFolder = "jobs/"):
+	realFileLocation = fileFolder + filename
+	if os.path.isfile(realFileLocation):
+		send_and_encode(sock, filename)
 		response = recv_and_decode(sock)
-		with open(filename, 'rb') as f:
-			sock.sendfile(f,0)
+		if response == filename: 
+			with open(realFileLocation, 'rb') as f:
+				sock.sendfile(f,0)
 	else:
 		print("Filename doesn't exists")
-	sock.close()
-
+	sock.close()	
