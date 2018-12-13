@@ -49,6 +49,10 @@ class DbController:
 		sql = "UPDATE jobs SET status = '{}' WHERE jobid = '{}'".format(status, jobID)
 		self.cursor.execute(sql)
 
+	def update_job_status_by_filename(self, fileName, status):
+		sql = "UPDATE jobs SET status = '{}' WHERE fileName = '{}'".format(status, fileName)
+		self.cursor.execute(sql)
+
 	def get_host_data(self, host, field = "*"):
 		sql = "SELECT {} from hosts WHERE hostname = '{}'".format(field, host)
 		self.cursor.execute(sql, host)
@@ -59,6 +63,12 @@ class DbController:
 		sql = "SELECT {} from jobs WHERE jobid = '{}'".format(field, jobID)
 		self.cursor.execute(sql)
 		jobsData = self.cursor.fetchone()
+		return jobsData
+
+	def get_jobs_data(self, status = ""):
+		sql = "SELECT * from jobs WHERE status = {}".format(status)
+		self.cursor.execute(sql)
+		jobsData = self.cursor.fetchall()
 		return jobsData
 
 	def get_worker_jobs(self, host, status = "*"):
@@ -74,11 +84,14 @@ class DbController:
 		listOfWorkers = [i[0] for i in listOfWorkersUnparsed]
 		return listOfWorkers
 
-	def get_max_jobid(self):
+	def get_next_jobid(self):
 		sql = "SELECT MAX(jobid) from jobs"
 		self.cursor.execute(sql)
-		maxJobid = self.cursor.fetchone()
-		return maxJobid
+		nextJobid = self.cursor.fetchone()[0]
+		if nextJobid:
+			return nextJobid + 1
+		else:
+			return 1
 
 	def clean_table(self, table):
 		sql = "TRUNCATE TABLE {}".format(table)
