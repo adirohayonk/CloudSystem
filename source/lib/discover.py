@@ -12,9 +12,10 @@ def sendUDPPacket(data, address = None):
 	"""
 	this function sends simple UDPPacket to specific address or broadcast address by default with data specified by:
 	creating a socket using create socket method, extracting broadcast address if needed and than send the message to the address.
-	- parameters: data, address::
-	-data - data that should be sended through the socket
-	-address - (default: broadcast) addresd that udp packet should be send to.
+
+	Arguments:
+		data (string): data that should be sended through the socket
+		address (string): (default: broadcast) addresd that udp packet should be send to.
 	"""
 	sock = sockTools.create_socket(isTCP = False)
 	#extracting broadcast address
@@ -31,8 +32,11 @@ def sendUDPPacket(data, address = None):
 
 def receiveDiscoverInfo():
 	"""
-	this function receives the discover info from the worker after and parse it  
-	this function returns the data in a list.
+	this function receives the discover info from the worker and parse it.
+
+	Returns:
+		list : machine information hostname, ipaddr, memory, cpunum 
+		tuple : the address that send the information. 
 	"""
 	ip = "0.0.0.0"
 	port = 4444
@@ -54,8 +58,10 @@ def receiveDiscoverInfo():
 
 def receiveDiscoverPacket():
 	"""
-	this function receives the Discover packet and call the function that collect the relevant information on the worker side. 
-	the function returns the information unparsed.
+	this function receives the Discover packet and call the function that collect the relevant information the information transferred to the manager address. 
+
+	Returns:
+		tuple : manager address
 	"""
 	ip = "0.0.0.0"
 	port = 4444 
@@ -76,13 +82,23 @@ def receiveDiscoverPacket():
 				managerAddress = addr[0]
 				Discovered = True	
 		except socket.timeout:
-			print("Socket timed out, receiving again...")
+			Discovered = False
 	return managerAddress
 
 def discoverWorkers(numberOfWorkers):
+	"""This function keep sending the discover packet in intervals of 5 sec until all workers are discovered
+	
+	Arguments:
+		numberOfWorkers (int): Number of workers that should be discovered. 
+	
+	Returns:
+		[dict] : All workers information. 
+	"""
+
 	currentWorkerNumber = 0
 	workersInformation = dict()
 	knownClients = []
+	print("Starting discover process search for {} workers".format(numberOfWorkers))
 	while currentWorkerNumber != numberOfWorkers:
 		sendUDPPacket("discover")
 		information, addr = receiveDiscoverInfo()	
@@ -99,9 +115,13 @@ def discoverWorkers(numberOfWorkers):
 	return workersInformation
 
 def updateWorkersInDb(db, workersInformation):
+	"""This function update workers information in the database.
+	
+	Arguments:
+		db (class) : handler for database used for database operations  
+		workersInformation (dict) : All the workers information. 
+	"""
+
 	db.clean_table('hosts')
 	for workerId,workerData in workersInformation.items():
 		db.insert_to_db("hosts",workerData)
-		
-			
-			

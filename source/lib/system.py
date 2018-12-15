@@ -1,3 +1,6 @@
+"""This module contains various system functions 
+that collects information and run files
+"""
 import sys
 sys.path.append('../lib/')
 import pathlib
@@ -7,19 +10,19 @@ from psutil import virtual_memory
 import subprocess
 import re
 
-def openFile(folder ,filename):
-	if not os.path.exists(folder):
-		os.makedirs(folder)
-	if os.path.isfile(filename):
-		return True
-	else: 
-		return False
-
 def createEnv():
+	"""This function creates the jobs folder if needed.
+	"""
 	jobsFolder = 'jobs/'
 	pathlib.Path(jobsFolder).mkdir(parents=True, exist_ok=True)
 	
 def gatherInformation():
+	"""This function collects system information such as hostname, ip address, total memory, number of CPU
+
+	Returns:
+		[string] : information splitted by colon
+	"""
+
 	#getting hostname
 	hostname = getSystemHostname()
 
@@ -36,12 +39,24 @@ def gatherInformation():
 
 
 def getSystemIp():
+	"""This function returns the system ip using ip command.
+	
+	Returns:
+		[string]: The ip address of the system 
+	"""
+
 	unparsedIpOutput = subprocess.check_output(["ip", "route", "ls"])
 	splitted = re.findall( r'src [\d.-]+ metric', str(unparsedIpOutput))
 	ipaddr = splitted[0].split()[1]
 	return ipaddr
 
 def getSystemHostname():
+	"""This function returns the hostname of the system using hostname command.
+	
+	Returns:
+		[string]: the hostname of the system 
+	"""
+
 	hostname = subprocess.check_output(["hostname"]) 
 	hostname = hostname.decode()
 	hostname = hostname.replace("\n","")
@@ -51,11 +66,11 @@ def run_file(filename_to_run, db):
 	"""
 	This function execute a file and store the output in output file 	
 	Arguments:
-		filename_to_run {String} -- filename that should be executed by the function
-		db {class} -- pointer to the db controller from the worker  
+		filename_to_run (String) : filename that should be executed by the function
+		db (class) : pointer to the db controller from the worker  
 	
 	Returns:
-		String -- output_file name 
+		String : output_file name 
 	"""
 	realFileLocation = "jobs/" +filename_to_run 
 	output_file = "results-" + filename_to_run 
