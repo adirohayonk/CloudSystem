@@ -11,3 +11,7 @@ source/manager/jobs/*
 source/client/jobFile*
 doc/*
 source/lib/mysql/*
+documentation/*
+source/manager/__pycache__/*
+source/client/__pycache__/*
+source/client/jobs/*
