@@ -12,6 +12,7 @@ import discover
 import databaseLib
 import system
 import argparse
+import traceback
 from configparser import ConfigParser
 
 def main():
@@ -65,6 +66,7 @@ class workerService(object):
 		"""
 
 		if not(managerIP):
+			print("Starting worker in discovery mode")
 			self.managerAddress = discover.receiveDiscoverPacket()
 		else:
 			self.managerAddress = managerIP
@@ -127,10 +129,7 @@ class workerService(object):
 		"""
 		sockTools.send_and_encode(server_socket, "Please send the file")
 		fileName = sockTools.receiveFile(server_socket)
-		try:
-			outputFileName = system.run_file(fileName, self.db)
-		except:
-			self.db.update_job_status_by_filename(fileName,"ERROR")
+		outputFileName = system.run_file(fileName, self.db)
 
 	def send_requested_file(self, server_socket):
 		"""This function sends the results file to the manager by receiving the jobID from the manager get the filename from the database and sends the relevant result file.

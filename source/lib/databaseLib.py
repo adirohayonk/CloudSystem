@@ -12,9 +12,14 @@ class DbController:
 		self.username = "man" 
 		self.password = "p" 
 		self.database = "cloudSystemDB"
-		self.mydb = self.connect_to_db(self.hostname, self.username, self.password, self.database)
+		try:
+			self.mydb = self.connect_to_db(self.hostname, self.username, self.password, self.database)
+		except mysql.connector.Error:
+			print("Cannot connect to db (maybe server is off?)")
+			exit(1)
 		self.mydb.autocommit = True
 		self.cursor = self.mydb.cursor(buffered=True)
+		self.create_tables()
 
 	def connect_to_db(self,hostname, username, password, database):
 		""" This function creates the connection to the database
@@ -31,6 +36,21 @@ class DbController:
 
 		mydb = mysql.connector.connect(host=hostname,user=username,passwd=password,database=database)
 		return mydb
+
+	def create_tables(self):
+		"""This function creates the jobs and hosts tables in the database if needed.
+		"""
+		checkJobsTable = "SHOW TABLES LIKE 'jobs'"
+		checkHostsTable = "SHOW TABLES LIKE 'hosts'"
+		self.cursor.execute(checkJobsTable)
+		isExist = self.cursor.fetchone()
+		if not(isExist):
+			self.cursor.execute("CREATE TABLE jobs(jobid INT PRIMARY KEY, fileName VARCHAR(255), hostname VARCHAR(255), status VARCHAR(255))")
+		self.cursor.execute(checkHostsTable)	
+		isExist = self.cursor.fetchone()
+		if not(isExist):
+			self.cursor.execute("CREATE TABLE hosts(hostname VARCHAR(25) PRIMARY KEY, ipaddr VARCHAR(25),totalMem VARCHAR(25), CPUnum VARCHAR(25))")
+
 
 	def insert_to_db(self, table, data):
 		"""This function inserts data to database tables.
@@ -99,7 +119,7 @@ class DbController:
 		"""this function returns data for specific host based on ip address if specific field is not privded it will return all the data
 		
 		Arguments:
-			ipaddr ([type]) : ip address that data should be pulled for 
+			ipaddr (str) : ip address that data should be pulled for 
 		
 		Keyword Arguments:
 			field (str) : specific field to pull data for (default: ("*")) 

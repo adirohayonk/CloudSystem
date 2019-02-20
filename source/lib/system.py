@@ -16,6 +16,7 @@ def createEnv():
 	jobsFolder = 'jobs/'
 	pathlib.Path(jobsFolder).mkdir(parents=True, exist_ok=True)
 	
+	
 def gatherInformation():
 	"""This function collects system information such as hostname, ip address, total memory, number of CPU
 
@@ -74,17 +75,24 @@ def run_file(filename_to_run, db):
 	"""
 	realFileLocation = "jobs/" +filename_to_run 
 	output_file = "results-" + filename_to_run 
+	f = open("jobs/" + output_file, 'w') 
 	#change the permission of the file to make it executeable
 	print("Changing file permission make it executable")
 	subprocess.call(["chmod", "+x", realFileLocation]) 
 	db.update_job_status_by_filename(filename_to_run, "IN-PROGRESS") 
 	print("Updating status to IN-PROGRESS")
 	#run the job and store the output
-	result = subprocess.check_output(["./"+realFileLocation]) 
-	print("Running File {}".format(filename_to_run))
+	try:
+		result = subprocess.check_output(["./"+realFileLocation],stderr=subprocess.STDOUT, universal_newlines=True) 
+		print("Running File {}".format(filename_to_run))
+	except subprocess.CalledProcessError as exc:
+		print("Job Failed to run: ErrorCode:{} \n{} ".format( exc.returncode, exc.output),file=f) 
+		db.update_job_status_by_filename(filename_to_run,"ERROR")
+		return output_file
+
 	#after execuion completed change job status in db
 	db.update_job_status_by_filename(filename_to_run, "COMPLETED") 
 	print("job has been done changing status to COMPLETED")
-	f = open("jobs/" + output_file, 'w') 
-	f.write(result.decode()) 
+	f.write(result) 
+	f.close()
 	return output_file

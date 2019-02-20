@@ -41,33 +41,44 @@ def main():
 	parser.add_argument('-g', '--getResults', metavar='JobID',
 		help="get job result file")
 	arguments = parser.parse_args()
+	pp = prettytable.PrettyTable(["JobID", "fileName", "hostname", "status"])
 
 	if not arguments.server:
 		arguments.server = config.get('server','ip') 
 	if not arguments.port:
 		arguments.port = int(config.get('server','port'))
 
-	if arguments.listOfJobs or arguments.jobInfo:
-		db = databaseLib.DbController(arguments.server) #get controller for the db
-		pp = prettytable.PrettyTable(["JobID", "fileName", "hostname", "status"])
-	else:
-		sock = create_manager_connection(arguments)
+	db = databaseLib.DbController(arguments.server) #get controller for the db
 
 	if arguments.listOfJobs:
 		print_list_of_jobs(arguments, db, pp)
 	elif arguments.jobInfo:
-		jobData = db.get_job_data(arguments.jobInfo)
-		pp.add_row(jobData)
-		print(pp)
-	elif arguments.newWorker:
+		get_job_info(db, pp, arguments.jobInfo)
+	else:
+		sock = create_manager_connection(arguments)
+	if arguments.newWorker:
 		add_new_worker(sock)
 	elif arguments.file:
 		send_file_to_server(arguments, sock)
 	elif arguments.getResults:
-		get_results_file(sock, arguments)
+		get_results_file(sock, arguments,db , pp)
 
 	if 'sock' in locals():
 		sock.close()
+
+def get_job_info(db, pp, jobID):
+	"""This function get job info for specific jobID and if there is data puts it in the table and print that to the user.
+	
+	Args:
+		db (class): db class handler for database operations. 
+		pp (class): pretty print handler for printing results. 
+		jobID (int): JobID of the specific job to collect data for 
+	"""
+
+	jobData = db.get_job_data(jobID)
+	if jobData:
+		pp.add_row(jobData)
+	print(pp)
 
 
 def add_new_worker(sock):
@@ -79,10 +90,11 @@ def add_new_worker(sock):
 	Raises:
 		SystemExit: Raises when the user wants to become a worker than the service replace the interface. 
 	"""
-	
-	sockTools.send_and_encode(sock, "newWorker")
 	workerInformation = system.gatherInformation()
-	sockTools.send_and_encode(sock, workerInformation)
+	sockTools.send_and_encode(sock, "newWorker")
+	response = sockTools.recv_and_decode(sock)
+	if response[:6] == "please":
+		sockTools.send_and_encode(sock, workerInformation)
 	response = sockTools.recv_and_decode(sock)
 	print(response)
 	if response[:3] == "new":
@@ -109,12 +121,14 @@ def create_manager_connection(arguments):
 	return sock
 
 
-def get_results_file(sock, arguments):
+def get_results_file(sock, arguments,db,pp):
 	"""This function request the results file from the server prompt the user for the downloading and store the results file in jobs folder.
 	
 	Args:
 		sock (class): socket that file should be transfer on. 
 		arguments (dict): all arguments from the command line. 
+		db (class): db class handler for database operations. 
+		pp (class): pretty print handler for printing results. 
 	"""
 
 	sockTools.send_and_encode(sock, "receiveResults")
@@ -123,10 +137,14 @@ def get_results_file(sock, arguments):
 			sockTools.send_and_encode(sock, arguments.getResults)
 	response = sockTools.recv_and_decode(sock)
 	print(response)
-	a = input()
-	if a[:1] == "y":
-			sockTools.send_and_encode(sock, a)
-			sockTools.receiveFile(sock)
+	if response[:4]	 == "Your":
+		get_job_info(db, pp, arguments.getResults)
+		exit(0)
+	else:
+		a = input()
+		if a[:1] == "y":
+				sockTools.send_and_encode(sock, a)
+				sockTools.receiveFile(sock)
 
 
 def print_list_of_jobs(arguments, db, pp):

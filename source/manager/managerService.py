@@ -22,16 +22,15 @@ def main():
 	parser = argparse.ArgumentParser(description='Options for running managerService') 
 	parser.add_argument('-d', '--discoverWorkers', default=False,action="store_true",
 	help="Enable broadcast discover method")
-	arguments = parser.parse_args()
 	parser.add_argument('-p', '--port', metavar='PORT', default=4444,
 	help="Port of the system (default: 4444)")
+	parser.add_argument('-n', '--numberOfWorkers', metavar='NUM', 
+	help="Number of workers that should be discovered")
 	arguments = parser.parse_args()
 
+
 	manager = managerService('0.0.0.0', arguments.port)
-	if arguments.discoverWorkers:
-		manager.setupWorkersData(broadcast = True)
-	else:
-		manager.setupWorkersData()
+	manager.setupWorkersData(arguments)
 	manager.listen()
 
 
@@ -52,16 +51,21 @@ class managerService(object):
 		self.currentJobID = self.db.get_next_jobid()
 		system.createEnv() #create environment folders
 		
-	def setupWorkersData(self, broadcast = False):
-		"""This function start the discover process if broadcast is True then it updates the workers in database.
-		if broadcast is not True then workers list is collected from the database without the discover process.
+	def setupWorkersData(self, arguments):
+		"""This function start the discover process if arguments.discoverWorkers in on.
+		if so the function will take the number of workers that should be discovered from the arguments as well.
+		if discoverWorkers is off workers data will be collected from the database.
 
-		Keyword Arguments:
-			broadcast (bool, optional): Defaults to False. This arguments marks if discover broadcast is needed. 
+		Arguments:
+			arguments (dict) : command line arguments 
+
 		"""
 
-		if broadcast:
-			workersInformation = discover.discoverWorkers(3) #get workers information 
+		if arguments.discoverWorkers:
+			if not(arguments.numberOfWorkers):
+				print("Please provide how many workers should be discovered?")
+				exit(1)
+			workersInformation = discover.discoverWorkers(arguments.numberOfWorkers) #get workers information 
 			discover.updateWorkersInDb(self.db,workersInformation)
 		self.workersList = self.db.get_workers_list() #store workers list for local use
 		self.numberOfWorkers = len(self.workersList)
@@ -169,9 +173,10 @@ class managerService(object):
 		this function add new worker to the system and to the database if worker already exists the function sends an ERROR"
 
 		Arguments:
-			client_socket (class) - the socket that transfers the client data. 
+			client_socket (class) : the socket that transfers the client data. 
 		"""
 		print("New worker request accepted")
+		sockTools.send_and_encode(client_socket, "please send your info")
 		newWorkerInformation = sockTools.recv_and_decode(client_socket)
 		workerInformationList = newWorkerInformation.split(":")
 		print("New worker information is: {}".format(workerInformationList))
@@ -181,6 +186,7 @@ class managerService(object):
 		else:
 			self.db.insert_to_db('hosts', workerInformationList)
 			sockTools.send_and_encode(client_socket,"new worker has been added info is:{}".format(workerInformationList))
+			self.workersList = self.db.get_workers_list() #store workers list for local use
 			self.numberOfWorkers += 1
 		
 
@@ -193,27 +199,35 @@ class managerService(object):
 
 		sockTools.send_and_encode(client_socket, "please provide job ID")
 		requestedJobID = sockTools.recv_and_decode(client_socket)
-		worker_socket = sockTools.create_socket(isTCP = True) 
-		workerHostname = (self.db.get_job_data(requestedJobID,"hostname"))[0]	
-		workerIP = (self.db.get_host_data(workerHostname, "ipaddr"))[0] 
-		worker_socket.connect((workerIP, 4444))
-		sockTools.send_and_encode(worker_socket, "receiveFile")
-		response = sockTools.recv_and_decode(worker_socket)
-		if response[:5] == "going":
-			sockTools.send_and_encode(worker_socket, requestedJobID)
-		resultsFile = sockTools.receiveFile(worker_socket)
-		sockTools.send_and_encode(client_socket, "Are you ready to download the results file(y/n)")
-		response = sockTools.recv_and_decode(client_socket)
-		print("Going to send {} to client".format(resultsFile))
-		if response[:1] == "y":
-			sockTools.sendFile(client_socket, resultsFile)
+		jobStatus = (self.db.get_job_data(requestedJobID, "status"))[0]
+		if jobStatus not in ["COMPLETED", "ERROR"]:
+			sockTools.send_and_encode(client_socket,"Your job is still in progress")
+		else:
+			worker_socket = sockTools.create_socket(isTCP = True) 
+			workerHostname = (self.db.get_job_data(requestedJobID,"hostname"))[0]	
+			workerIP = (self.db.get_host_data(workerHostname, "ipaddr"))[0] 
+			worker_socket.connect((workerIP, 4444))
+			sockTools.send_and_encode(worker_socket, "receiveFile")
+			response = sockTools.recv_and_decode(worker_socket)
+			if response[:5] == "going":
+				sockTools.send_and_encode(worker_socket, requestedJobID)
+			resultsFile = sockTools.receiveFile(worker_socket)
+			if jobStatus == "ERROR":
+				sockTools.send_and_encode(client_socket,"You job has failed do you want to download err log(y/n)")	
+				response = sockTools.recv_and_decode(client_socket)
+			else:
+				sockTools.send_and_encode(client_socket, "Are you ready to download the results file(y/n)")
+				response = sockTools.recv_and_decode(client_socket)
+			print("Going to send {} to client".format(resultsFile))
+			if response[:1] == "y":
+				sockTools.sendFile(client_socket, resultsFile)
 		
 		
 	def evaluteWorkers(self):
 		""" This function finds the worker with least jobs by collection all jobs information and evalutae the number of IN-PROGRESS jobs for each worker and than order that list.
 		
 		Returns:
-			String -- most available worker 
+			[String] : most available worker 
 		"""
 
 		workersJobsNum = dict() #workers jobs number will by stored in dictionary

@@ -63,8 +63,6 @@ def recv_and_decode(sock):
 		[string] - decoded data from the socket.
 	"""
 
-	
-
 	data = sock.recv(1024)
 	decodedData = data.decode()
 	decodedData = decodedData.strip()

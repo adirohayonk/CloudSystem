@@ -31,13 +31,12 @@ def sendUDPPacket(data, address = None):
 
 
 def receiveDiscoverInfo():
-	"""
-	this function receives the discover info from the worker and parse it.
-
+	"""This function receives the discover info from the worker and parse it.
+	
 	Returns:
-		list : machine information hostname, ipaddr, memory, cpunum 
-		tuple : the address that send the information. 
+		(list, tuple): tuple with machine information and address. 
 	"""
+
 	ip = "0.0.0.0"
 	port = 4444
 	sock = sockTools.create_socket(isTCP = False)
@@ -61,7 +60,7 @@ def receiveDiscoverPacket():
 	this function receives the Discover packet and call the function that collect the relevant information the information transferred to the manager address. 
 
 	Returns:
-		tuple : manager address
+		[tuple]: manager address
 	"""
 	ip = "0.0.0.0"
 	port = 4444 
@@ -92,14 +91,14 @@ def discoverWorkers(numberOfWorkers):
 		numberOfWorkers (int): Number of workers that should be discovered. 
 	
 	Returns:
-		[dict] : All workers information. 
+		[dict]: All workers information. 
 	"""
 
 	currentWorkerNumber = 0
 	workersInformation = dict()
 	knownClients = []
 	print("Starting discover process search for {} workers".format(numberOfWorkers))
-	while currentWorkerNumber != numberOfWorkers:
+	while currentWorkerNumber < int(numberOfWorkers):
 		sendUDPPacket("discover")
 		information, addr = receiveDiscoverInfo()	
 		if information:
@@ -111,15 +110,15 @@ def discoverWorkers(numberOfWorkers):
 				sendUDPPacket("{} Discovered".format(str(addr)),addr[0])
 				currentWorkerNumber+=1
 				knownClients.append(addr[0])
-		time.sleep(5)
+		time.sleep(2)
 	return workersInformation
 
 def updateWorkersInDb(db, workersInformation):
 	"""This function update workers information in the database.
 	
 	Arguments:
-		db (class) : handler for database used for database operations  
-		workersInformation (dict) : All the workers information. 
+		db (class): handler for database used for database operations  
+		workersInformation (dict): All the workers information. 
 	"""
 
 	db.clean_table('hosts')
