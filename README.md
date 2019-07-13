@@ -1,5 +1,5 @@
 # CloudSystem
-This system allows executing of files on remote servers in linux environment.
+This system allows executing files on remote servers in linux environment.
 
 ## Getting Started
 You can run the managerService ,workerService, and clientInterface on local Machine to see how the system works.  
