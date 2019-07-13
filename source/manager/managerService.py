@@ -224,7 +224,7 @@ class managerService(object):
 		
 		
 	def evaluteWorkers(self):
-		""" This function finds the worker with least jobs by collection all jobs information and evalutae the number of IN-PROGRESS jobs for each worker and than order that list.
+		""" This function finds the worker with least jobs by collecting all jobs information and evaluate the number of IN-PROGRESS jobs for each worker and than order that list.
 		
 		Returns:
 			[String] : most available worker 
